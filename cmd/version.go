@@ -26,9 +26,9 @@ import (
 )
 
 var (
-	ver       string
-	env       string
-	buildTime string
+	Ver       string = "unknown"
+	Env       string = "unknown"
+	BuildTime string = "unknown"
 )
 
 // versionCmd represents the version command
@@ -37,9 +37,9 @@ var versionCmd = &cobra.Command{
 	Short: "Print uhugo version",
 	Long:  `Print current vesion of uhugo.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Printf("vesrion: %s\n", ver)
-		cmd.Printf("env: %s\n", env)
-		cmd.Printf("build-time: %s\n", buildTime)
+		cmd.Printf("vesrion: %s\n", Ver)
+		cmd.Printf("env: %s\n", Env)
+		cmd.Printf("build-time: %s\n", BuildTime)
 	},
 }
 

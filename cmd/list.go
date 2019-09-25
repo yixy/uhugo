@@ -58,9 +58,11 @@ without suffix and without numeric prefix in current directory.`,
 				_, err = listFile.WriteString(output)
 				if err != nil {
 					cmd.PrintErr(err.Error())
+					return
 				}
 			}
 		}
+		cmd.Println(".list file generate success.")
 	},
 }
 

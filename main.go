@@ -23,6 +23,18 @@ package main
 
 import "github.com/yixy/uhugo/cmd"
 
+var (
+	ver       string = "unknown"
+	env       string = "unknown"
+	buildTime string = "unknown"
+)
+
+func init() {
+	cmd.Ver = ver
+	cmd.Env = env
+	cmd.BuildTime = buildTime
+}
+
 func main() {
-  cmd.Execute()
+	cmd.Execute()
 }

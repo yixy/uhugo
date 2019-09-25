@@ -56,7 +56,7 @@ Notice: uhugo update command will rewrite the file, please backup of important d
 			content := string(b)
 			fileList := strings.Split(content, "\n")
 			size := util.StringSize(uint(len(fileList) - 1))
-			format := fmt.Sprintf("%%0%dd|%%s.md", size)
+			format := fmt.Sprintf("%%0%dd%s%%s.md", size, util.Separater)
 			for i, file := range fileList {
 				if file == "" {
 					continue
@@ -149,10 +149,20 @@ Notice: uhugo update command will rewrite the file, please backup of important d
 					return
 				}
 				md.Close()
+				err = os.Remove(name)
+				if err != nil {
+					cmd.PrintErr(err.Error())
+					return
+				}
+				err = os.Rename(tmpFile, target)
+				if err != nil {
+					cmd.PrintErr(err.Error())
+					return
+				}
 			}
 
 		}
-
+		cmd.Println("file is updated.")
 	},
 }
 

@@ -4,6 +4,8 @@ import (
 	"strings"
 )
 
+const Separater string = "-"
+
 // Get filename without numeric prefix and .md suffix
 func GetMDRealName(name string) (realName string, isMd bool) {
 	end := strings.LastIndex(name, ".md")
@@ -11,7 +13,7 @@ func GetMDRealName(name string) (realName string, isMd bool) {
 		//end = len(name)
 		return "", false
 	}
-	start := strings.Index(name, "|")
+	start := strings.Index(name, Separater)
 	if start == -1 {
 		start = 0
 	} else {
