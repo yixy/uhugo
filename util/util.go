@@ -1,10 +1,14 @@
 package util
 
 import (
+	"crypto/md5"
+	"fmt"
+	"io/ioutil"
+	"os"
 	"strings"
 )
 
-const Separater string = "-"
+const EMPTY = "empty"
 
 // Get filename without numeric prefix and .md suffix
 func GetMDRealName(name string) (realName string, isMd bool) {
@@ -13,13 +17,7 @@ func GetMDRealName(name string) (realName string, isMd bool) {
 		//end = len(name)
 		return "", false
 	}
-	start := strings.Index(name, Separater)
-	if start == -1 {
-		start = 0
-	} else {
-		start += 1
-	}
-	return name[start:end], true
+	return name[:end], true
 }
 
 var sizeTable []uint
@@ -56,4 +54,20 @@ func StringSize(u uint) (size int) {
 		}
 	}
 	return len(sizeTable)
+}
+
+func GetFileMd5(filepath string) (sum string, err error) {
+	file, err := os.Open(filepath)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+	bytes, err := ioutil.ReadAll(file)
+	if err != nil {
+		return "", err
+	}
+	if len(bytes) == 0 {
+		return EMPTY, nil
+	}
+	return fmt.Sprintf("%x", md5.Sum(bytes)), nil
 }

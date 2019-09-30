@@ -22,6 +22,7 @@ THE SOFTWARE.
 package cmd
 
 import (
+	"crypto/md5"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -34,9 +35,10 @@ import (
 // listCmd represents the list command
 var listCmd = &cobra.Command{
 	Use:   "list",
-	Short: "Generate a list file within markdown filename",
-	Long: `Generate a file named .list witch contains origin markdown filename 
-without suffix and without numeric prefix in current directory.`,
+	Short: "Generate a list file within markdown filename and md5 sum",
+	Long: `Generate a file named .list which contains origin markdown filename 
+without suffix and its md5 sum in current directory. 
+If markdown file is empty, then fill the file content with filename`,
 	Run: func(cmd *cobra.Command, args []string) {
 		files, err := ioutil.ReadDir(".")
 		if err != nil {
@@ -49,12 +51,31 @@ without suffix and without numeric prefix in current directory.`,
 			return
 		}
 		defer listFile.Close()
-		for _, fileName := range files {
-			if fileName.IsDir() {
+		for _, file := range files {
+			if file.IsDir() {
 				continue
 			}
-			if realName, isMD := util.GetMDRealName(fileName.Name()); isMD {
-				output := fmt.Sprintf("%s\n", realName)
+			filename := file.Name()
+			if realName, isMD := util.GetMDRealName(filename); isMD {
+				sum, err := util.GetFileMd5(filename)
+				if err != nil {
+					cmd.PrintErr(err.Error())
+				}
+				if sum == util.EMPTY {
+					cmd.Printf("%s is empty, fill the content by filename.\n", filename)
+					file, err := os.OpenFile(filename, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, os.ModePerm)
+					if err != nil {
+						cmd.PrintErr(err.Error())
+						return
+					}
+					_, err = file.WriteString(filename)
+					if err != nil {
+						cmd.PrintErr(err.Error())
+						return
+					}
+					sum = fmt.Sprintf("%x", md5.Sum([]byte(filename)))
+				}
+				output := fmt.Sprintf("%s|%s\n", realName, sum)
 				_, err = listFile.WriteString(output)
 				if err != nil {
 					cmd.PrintErr(err.Error())

@@ -26,52 +26,48 @@ $ cat > c.md <<EOF
 this is c content.
 EOF
 
-# display by alphabet order default
-$ ls
-a.md    b.md    c.md 
-
 # generate the markdown file list
 $ uhugo list
 .list file generate success.
 
 # filename is .list
 $ cat .list     
-a
-b
-c
+a|0f29ad984b2ad8973adb8ff6a429a20f
+b|e894ae6683e091a244777d0cc04f0998
+c|4f339eac345d3cd783d3c40e7ef469d2
 ```
 
-You can manage the list to arrange the files.
+You can manage the list to change the files' name.
 
 ```
 # arranged .list file.
 $ vim .list
-b
-a
-c
+aaa|0f29ad984b2ad8973adb8ff6a429a20f
+bbb|e894ae6683e091a244777d0cc04f0998
+ccc|4f339eac345d3cd783d3c40e7ef469d2
 ```
 
-make the markdown files arranged by rename file in list order, and update front matter of files. We can mod the title, tags, categories of file.
+make the markdown files update by .list. We can also specify the tags, categories of file.
 
 ```
 $ uhugo update -c=test -t=demo,abc 
 file is updated.
 
 $ ls
-1-b.md 2-a.md 3-c.md
+aaa.md bbb.md ccc.md
 
-$ cat 1-b.md 
+$ cat aaa.md
 ---
 categories:
 - test
-date: "2019-09-25T14:14:52+08:00"
-lastmod: "2019-09-25T14:22:26+08:00"
+date: "2019-09-30T09:08:25+08:00"
+lastmod: "2019-09-30T09:08:25+08:00"
 tags:
 - demo
 - abc
-title: 1-b
+title: aaa
 ---
-this is b content.
+this is a content.
 
 ```
 

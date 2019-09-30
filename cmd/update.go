@@ -41,28 +41,36 @@ var updateCmd = &cobra.Command{
 	Short: "Update the markdown file",
 	Long: `Update will rewrite the markdown file in current directory:
 1.	update front matter of the file, title will be rewrite 
-	by filename, lastmod will be rewrite by mtime, tags. Only support for yaml fmatter.
+	by filename, lastmod will be rewrite by mtime. Only support for yaml fmatter.
 2.	if there is a .list file in current dir, the markdown filename and title in 
-	front matter will be rewrite in prefix|filename format. the prefix is numeric 
-	string witch depends on the file order in .list. The markdown witch is not in .list 
-	will be ignored in this scene.
+	front matter will be rewrite by the .list file. Do not modify the file between 
+	the execution of the list command and the execution of the update command, 
+	otherwise the file md5sum will be change. files with same md5sum will be ignored.
 
 Notice: uhugo update command will rewrite the file, please backup of important data before execution`,
 	Run: func(cmd *cobra.Command, args []string) {
 		var mdList = make(map[string]string, 0)
 		b, err := ioutil.ReadFile(".list")
 		if err == nil {
-			//save prefix|filename format into mdList from .list
+			//save filenames into mdList from .list
 			content := string(b)
 			fileList := strings.Split(content, "\n")
-			size := util.StringSize(uint(len(fileList) - 1))
-			format := fmt.Sprintf("%%0%dd%s%%s.md", size, util.Separater)
-			for i, file := range fileList {
-				if file == "" {
+			var ignore []string
+			for _, file := range fileList {
+				//filename|md5sum
+				result := strings.Split(file, "|")
+				if result[0] == "" || result[1] == "" || result[1] == util.EMPTY {
 					continue
 				}
-				target := fmt.Sprintf(format, i+1, file)
-				mdList[file] = target
+				_, ok := mdList[result[1]]
+				if !ok {
+					mdList[result[1]] = result[0]
+				} else {
+					ignore = append(ignore, result[1])
+				}
+			}
+			for _, value := range ignore {
+				delete(mdList, value)
 			}
 		}
 		files, err := ioutil.ReadDir(".")
@@ -74,12 +82,18 @@ Notice: uhugo update command will rewrite the file, please backup of important d
 			//md filename
 			name := file.Name()
 			//filename without prefix and suffix
-			realName, isMd := util.GetMDRealName(name)
+			_, isMd := util.GetMDRealName(name)
 			if file.IsDir() || !isMd {
 				continue
 			}
+			sum, err := util.GetFileMd5(name)
+			if err != nil {
+				cmd.PrintErr(err)
+				return
+			}
 			//filename format from mdList
-			target, ok := mdList[realName]
+			target, ok := mdList[sum]
+			target = fmt.Sprintf("%s.md", target)
 			if !ok {
 				target = name
 			}
