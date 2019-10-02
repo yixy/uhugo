@@ -27,9 +27,8 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/yixy/uhugo/util"
-
 	"github.com/spf13/cobra"
+	"github.com/yixy/uhugo/util"
 )
 
 // listCmd represents the list command
@@ -40,50 +39,7 @@ var listCmd = &cobra.Command{
 without suffix and its md5 sum in current directory. 
 If markdown file is empty, then fill the file content with filename`,
 	Run: func(cmd *cobra.Command, args []string) {
-		files, err := ioutil.ReadDir(".")
-		if err != nil {
-			cmd.PrintErr(err.Error())
-			return
-		}
-		listFile, err := os.OpenFile(".list", os.O_CREATE|os.O_TRUNC|os.O_WRONLY, os.ModePerm)
-		if err != nil {
-			cmd.PrintErr(err.Error())
-			return
-		}
-		defer listFile.Close()
-		for _, file := range files {
-			if file.IsDir() {
-				continue
-			}
-			filename := file.Name()
-			if realName, isMD := util.GetMDRealName(filename); isMD {
-				sum, err := util.GetFileMd5(filename)
-				if err != nil {
-					cmd.PrintErr(err.Error())
-				}
-				if sum == util.EMPTY {
-					cmd.Printf("%s is empty, fill the content by filename.\n", filename)
-					file, err := os.OpenFile(filename, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, os.ModePerm)
-					if err != nil {
-						cmd.PrintErr(err.Error())
-						return
-					}
-					_, err = file.WriteString(filename)
-					if err != nil {
-						cmd.PrintErr(err.Error())
-						return
-					}
-					sum = fmt.Sprintf("%x", md5.Sum([]byte(filename)))
-				}
-				output := fmt.Sprintf("%s|%s\n", realName, sum)
-				_, err = listFile.WriteString(output)
-				if err != nil {
-					cmd.PrintErr(err.Error())
-					return
-				}
-			}
-		}
-		cmd.Println(".list file generate success.")
+		list(cmd)
 	},
 }
 
@@ -99,4 +55,51 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// listCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+}
+
+func list(cmd *cobra.Command) {
+	files, err := ioutil.ReadDir(".")
+	if err != nil {
+		cmd.PrintErr(err.Error())
+		return
+	}
+	listFile, err := os.OpenFile(".list", os.O_CREATE|os.O_TRUNC|os.O_WRONLY, os.ModePerm)
+	if err != nil {
+		cmd.PrintErr(err.Error())
+		return
+	}
+	defer listFile.Close()
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+		filename := file.Name()
+		if realName, isMD := util.GetMDRealName(filename); isMD {
+			sum, err := util.GetFileMd5(filename)
+			if err != nil {
+				cmd.PrintErr(err.Error())
+			}
+			if sum == util.EMPTY {
+				cmd.Printf("%s is empty, fill the content by filename.\n", filename)
+				file, err := os.OpenFile(filename, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, os.ModePerm)
+				if err != nil {
+					cmd.PrintErr(err.Error())
+					return
+				}
+				_, err = file.WriteString(filename)
+				if err != nil {
+					cmd.PrintErr(err.Error())
+					return
+				}
+				sum = fmt.Sprintf("%x", md5.Sum([]byte(filename)))
+			}
+			output := fmt.Sprintf("%s|%s\n", realName, sum)
+			_, err = listFile.WriteString(output)
+			if err != nil {
+				cmd.PrintErr(err.Error())
+				return
+			}
+		}
+	}
+	cmd.Println(".list file generate success.")
 }

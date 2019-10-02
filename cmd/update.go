@@ -177,6 +177,7 @@ Notice: uhugo update command will rewrite the file, please backup of important d
 
 		}
 		cmd.Println("file is updated.")
+		list(cmd)
 	},
 }
 
